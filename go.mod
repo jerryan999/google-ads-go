@@ -3,7 +3,6 @@ module github.com/butlerhq/google-ads-go
 go 1.17
 
 require (
-	github.com/kritzware/google-ads-go v0.2.1
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	google.golang.org/api v0.66.0

@@ -16,10 +16,6 @@ github.com/golang/protobuf/ptypes/timestamp
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gax-go/v2/apierror
 github.com/googleapis/gax-go/v2/apierror/internal/proto
-# github.com/kritzware/google-ads-go v0.2.1
-## explicit
-github.com/kritzware/google-ads-go/ads
-github.com/kritzware/google-ads-go/auth
 # go.opencensus.io v0.23.0
 ## explicit; go 1.13
 go.opencensus.io
