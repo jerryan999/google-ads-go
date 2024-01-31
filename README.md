@@ -11,9 +11,9 @@
 ## Installation
 To install, simply run:
 ```bash
-$ go get -d github.com/butlerhq/google-ads-go
+$ go get -d github.com/jerryan999/google-ads-go
 ```
-Make sure your PATH includes the $GOPATH/bin directory if you want to use the [CLI utils](https://github.com/butlerhq/google-ads-go#cli):
+Make sure your PATH includes the $GOPATH/bin directory if you want to use the [CLI utils](https://github.com/jerryan999/google-ads-go#cli):
 ```bash
 export PATH=$PATH:$GOPATH/bin
 ````
@@ -25,8 +25,8 @@ package main
 import (
   "fmt"
 
-  "github.com/butlerhq/google-ads-go/ads"
-  "github.com/butlerhq/google-ads-go/services"
+  "github.com/jerryan999/google-ads-go/ads"
+  "github.com/jerryan999/google-ads-go/services"
 )
 
 func main() {

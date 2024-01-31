@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC.
+// Copyright 2024 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,37 +8,51 @@
 //
 // For product documentation, see: https://cloud.google.com/service-control/
 //
-// Creating a client
+// # Library status
+//
+// These client libraries are officially supported by Google. However, this
+// library is considered complete and is in maintenance mode. This means
+// that we will address critical bugs and security issues but will not add
+// any new features.
+//
+// When possible, we recommend using our newer
+// [Cloud Client Libraries for Go](https://pkg.go.dev/cloud.google.com/go)
+// that are still actively being worked and iterated on.
+//
+// # Creating a client
 //
 // Usage example:
 //
-//   import "google.golang.org/api/servicecontrol/v2"
-//   ...
-//   ctx := context.Background()
-//   servicecontrolService, err := servicecontrol.NewService(ctx)
+//	import "google.golang.org/api/servicecontrol/v2"
+//	...
+//	ctx := context.Background()
+//	servicecontrolService, err := servicecontrol.NewService(ctx)
 //
-// In this example, Google Application Default Credentials are used for authentication.
+// In this example, Google Application Default Credentials are used for
+// authentication. For information on how to create and obtain Application
+// Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
-// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+// # Other authentication options
 //
-// Other authentication options
+// By default, all available scopes (see "Constants") are used to authenticate.
+// To restrict scopes, use [google.golang.org/api/option.WithScopes]:
 //
-// By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
+//	servicecontrolService, err := servicecontrol.NewService(ctx, option.WithScopes(servicecontrol.ServicecontrolScope))
 //
-//   servicecontrolService, err := servicecontrol.NewService(ctx, option.WithScopes(servicecontrol.ServicecontrolScope))
+// To use an API key for authentication (note: some APIs do not support API
+// keys), use [google.golang.org/api/option.WithAPIKey]:
 //
-// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+//	servicecontrolService, err := servicecontrol.NewService(ctx, option.WithAPIKey("AIza..."))
 //
-//   servicecontrolService, err := servicecontrol.NewService(ctx, option.WithAPIKey("AIza..."))
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth
+// flow, use [google.golang.org/api/option.WithTokenSource]:
 //
-// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+//	config := &oauth2.Config{...}
+//	// ...
+//	token, err := config.Exchange(ctx, ...)
+//	servicecontrolService, err := servicecontrol.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
-//   config := &oauth2.Config{...}
-//   // ...
-//   token, err := config.Exchange(ctx, ...)
-//   servicecontrolService, err := servicecontrol.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
-//
-// See https://godoc.org/google.golang.org/api/option/ for details on options.
+// See [google.golang.org/api/option.ClientOption] for details on options.
 package servicecontrol // import "google.golang.org/api/servicecontrol/v2"
 
 import (
@@ -54,6 +68,7 @@ import (
 	"strings"
 
 	googleapi "google.golang.org/api/googleapi"
+	internal "google.golang.org/api/internal"
 	gensupport "google.golang.org/api/internal/gensupport"
 	option "google.golang.org/api/option"
 	internaloption "google.golang.org/api/option/internaloption"
@@ -74,12 +89,15 @@ var _ = errors.New
 var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
+var _ = internal.Version
 
 const apiId = "servicecontrol:v2"
 const apiName = "servicecontrol"
 const apiVersion = "v2"
 const basePath = "https://servicecontrol.googleapis.com/"
+const basePathTemplate = "https://servicecontrol.UNIVERSE_DOMAIN/"
 const mtlsBasePath = "https://servicecontrol.mtls.googleapis.com/"
+const defaultUniverseDomain = "googleapis.com"
 
 // OAuth2 scopes used by this API.
 const (
@@ -93,14 +111,16 @@ const (
 
 // NewService creates a new Service.
 func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, error) {
-	scopesOption := option.WithScopes(
+	scopesOption := internaloption.WithDefaultScopes(
 		"https://www.googleapis.com/auth/cloud-platform",
 		"https://www.googleapis.com/auth/servicecontrol",
 	)
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultEndpointTemplate(basePathTemplate))
 	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
+	opts = append(opts, internaloption.WithDefaultUniverseDomain(defaultUniverseDomain))
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -296,6 +316,11 @@ type AuditLog struct {
 	// API method, if applicable.
 	NumResponseItems int64 `json:"numResponseItems,omitempty,string"`
 
+	// PolicyViolationInfo: Indicates the policy violations for this
+	// request. If the request is denied by the policy, violation
+	// information will be logged here.
+	PolicyViolationInfo *PolicyViolationInfo `json:"policyViolationInfo,omitempty"`
+
 	// Request: The operation request. This may not include all request
 	// parameters, such as those that are too large, privacy-sensitive, or
 	// duplicated elsewhere in the log record. It should never include
@@ -481,6 +506,10 @@ type AuthenticationInfo struct {
 	// keys/{key}"
 	ServiceAccountKeyName string `json:"serviceAccountKeyName,omitempty"`
 
+	// ServiceDelegationHistory: Records the history of delegated resource
+	// access across Google services.
+	ServiceDelegationHistory *ServiceDelegationHistory `json:"serviceDelegationHistory,omitempty"`
+
 	// ThirdPartyPrincipal: The third party identification (if any) of the
 	// authenticated user making the request. When the JSON object
 	// represented here has a proto equivalent, the proto name will be
@@ -604,7 +633,7 @@ type CheckResponse struct {
 	Headers map[string]string `json:"headers,omitempty"`
 
 	// Status: Operation is allowed when this field is not set. Any non-'OK'
-	// status indicates a denial; google.rpc.Status.details () would contain
+	// status indicates a denial; google.rpc.Status.details would contain
 	// additional details about the denial.
 	Status *Status `json:"status,omitempty"`
 
@@ -668,6 +697,54 @@ func (s *FirstPartyPrincipal) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// OrgPolicyViolationInfo: Represents OrgPolicy Violation information.
+type OrgPolicyViolationInfo struct {
+	// Payload: Optional. Resource payload that is currently in scope and is
+	// subjected to orgpolicy conditions. This payload may be the subset of
+	// the actual Resource that may come in the request. This payload should
+	// not contain any core content.
+	Payload googleapi.RawMessage `json:"payload,omitempty"`
+
+	// ResourceTags: Optional. Tags referenced on the resource at the time
+	// of evaluation. These also include the federated tags, if they are
+	// supplied in the CheckOrgPolicy or CheckCustomConstraints Requests.
+	// Optional field as of now. These tags are the Cloud tags that are
+	// available on the resource during the policy evaluation and will be
+	// available as part of the OrgPolicy check response for logging
+	// purposes.
+	ResourceTags map[string]string `json:"resourceTags,omitempty"`
+
+	// ResourceType: Optional. Resource type that the orgpolicy is checked
+	// against. Example: compute.googleapis.com/Instance,
+	// store.googleapis.com/bucket
+	ResourceType string `json:"resourceType,omitempty"`
+
+	// ViolationInfo: Optional. Policy violations
+	ViolationInfo []*ViolationInfo `json:"violationInfo,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Payload") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Payload") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *OrgPolicyViolationInfo) MarshalJSON() ([]byte, error) {
+	type NoMethod OrgPolicyViolationInfo
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Peer: This message defines attributes for a node that handles a
 // network request. The node can be either a service or an application
 // that sends, forwards, or receives the request. Service peers should
@@ -684,8 +761,8 @@ type Peer struct {
 
 	// Principal: The identity of this peer. Similar to
 	// `Request.auth.principal`, but relative to the peer instead of the
-	// request. For example, the idenity associated with a load balancer
-	// that forwared the request.
+	// request. For example, the identity associated with a load balancer
+	// that forwarded the request.
 	Principal string `json:"principal,omitempty"`
 
 	// RegionCode: The CLDR country/region code associated with the above IP
@@ -712,6 +789,38 @@ type Peer struct {
 
 func (s *Peer) MarshalJSON() ([]byte, error) {
 	type NoMethod Peer
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PolicyViolationInfo: Information related to policy violations for
+// this request.
+type PolicyViolationInfo struct {
+	// OrgPolicyViolationInfo: Indicates the orgpolicy violations for this
+	// resource.
+	OrgPolicyViolationInfo *OrgPolicyViolationInfo `json:"orgPolicyViolationInfo,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "OrgPolicyViolationInfo") to unconditionally include in API requests.
+	// By default, fields with empty or default values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "OrgPolicyViolationInfo")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PolicyViolationInfo) MarshalJSON() ([]byte, error) {
+	type NoMethod PolicyViolationInfo
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -751,8 +860,7 @@ func (s *ReportRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ReportResponse: Response message for the Report method. If the
-// request contains any invalid data, the server returns an RPC error.
+// ReportResponse: Response message for the Report method.
 type ReportResponse struct {
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -838,15 +946,17 @@ func (s *Request) MarshalJSON() ([]byte, error) {
 
 // RequestMetadata: Metadata about the request.
 type RequestMetadata struct {
-	// CallerIp: The IP address of the caller. For caller from internet,
-	// this will be public IPv4 or IPv6 address. For caller from a Compute
-	// Engine VM with external IP address, this will be the VM's external IP
-	// address. For caller from a Compute Engine VM without external IP
-	// address, if the VM is in the same organization (or project) as the
-	// accessed resource, `caller_ip` will be the VM's internal IPv4
-	// address, otherwise the `caller_ip` will be redacted to
-	// "gce-internal-ip". See https://cloud.google.com/compute/docs/vpc/ for
-	// more information.
+	// CallerIp: The IP address of the caller. For a caller from the
+	// internet, this will be the public IPv4 or IPv6 address. For calls
+	// made from inside Google's internal production network from one GCP
+	// service to another, `caller_ip` will be redacted to "private". For a
+	// caller from a Compute Engine VM with a external IP address,
+	// `caller_ip` will be the VM's external IP address. For a caller from a
+	// Compute Engine VM without a external IP address, if the VM is in the
+	// same organization (or project) as the accessed resource, `caller_ip`
+	// will be the VM's internal IPv4 address, otherwise `caller_ip` will be
+	// redacted to "gce-internal-ip". See
+	// https://cloud.google.com/compute/docs/vpc/ for more information.
 	CallerIp string `json:"callerIp,omitempty"`
 
 	// CallerNetwork: The network of the caller. Set only if the network
@@ -865,7 +975,7 @@ type RequestMetadata struct {
 	// apitools-client/1.0 gcloud/0.9.62`: The request was made by the
 	// Google Cloud SDK CLI (gcloud). + `AppEngine-Google;
 	// (+http://code.google.com/appengine; appid: s~my-project`: The request
-	// was made from the `my-project` App Engine app. NOLINT
+	// was made from the `my-project` App Engine app.
 	CallerSuppliedUserAgent string `json:"callerSuppliedUserAgent,omitempty"`
 
 	// DestinationAttributes: The destination of a network activity, such as
@@ -914,7 +1024,7 @@ type Resource struct {
 	// a resource that may be set by external tools to store and retrieve
 	// arbitrary metadata. They are not queryable and should be preserved
 	// when modifying objects. More info:
-	// https://kubernetes.io/docs/user-guide/annotations
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// CreateTime: Output only. The timestamp when the resource was created.
@@ -1012,14 +1122,13 @@ type ResourceInfo struct {
 	// Container: Optional. The identifier of the container of this
 	// resource. For Google Cloud APIs, the resource container must be one
 	// of the following formats: - `projects/` - `folders/` -
-	// `organizations/` For the policy enforcement on the container level
-	// (VPCSC and Location Policy check), this field takes precedence on the
-	// container extracted from name when presents.
+	// `organizations/` Required for the policy enforcement on the container
+	// level (e.g. VPCSC, Location Policy check, Org Policy check).
 	Container string `json:"container,omitempty"`
 
-	// Location: Optional. The location of the resource. The value must be a
-	// valid zone, region or multiregion. For example: "europe-west4" or
-	// "northamerica-northeast1-a"
+	// Location: Optional. The location of the resource, it must be a valid
+	// zone, region or multiregion, for example: "europe-west4",
+	// "northamerica-northeast1-a". Required for location policy check.
 	Location string `json:"location,omitempty"`
 
 	// Name: The name of the resource referenced in the request.
@@ -1185,6 +1294,94 @@ func (s *ServiceAccountDelegationInfo) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// ServiceDelegationHistory: The history of delegation across multiple
+// services as the result of the original user's action. Such as
+// "service A uses its own account to do something for user B". This
+// differs from ServiceAccountDelegationInfo, which only tracks the
+// history of direct token exchanges (impersonation).
+type ServiceDelegationHistory struct {
+	// OriginalPrincipal: The original end user who initiated the request to
+	// GCP.
+	OriginalPrincipal string `json:"originalPrincipal,omitempty"`
+
+	// ServiceMetadata: Data identifying the service specific jobs or units
+	// of work that were involved in a chain of service calls.
+	ServiceMetadata []*ServiceMetadata `json:"serviceMetadata,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "OriginalPrincipal")
+	// to unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "OriginalPrincipal") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ServiceDelegationHistory) MarshalJSON() ([]byte, error) {
+	type NoMethod ServiceDelegationHistory
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ServiceMetadata: Metadata describing the service and additional
+// service specific information used to identify the job or unit of work
+// at hand.
+type ServiceMetadata struct {
+	// JobMetadata: Additional metadata provided by service teams to
+	// describe service specific job information that was triggered by the
+	// original principal.
+	JobMetadata googleapi.RawMessage `json:"jobMetadata,omitempty"`
+
+	// PrincipalSubject: A string representing the principal_subject
+	// associated with the identity. For most identities, the format will be
+	// `principal://iam.googleapis.com/{identity pool
+	// name}/subject/{subject)` except for some GKE identities
+	// (GKE_WORKLOAD, FREEFORM, GKE_HUB_WORKLOAD) that are still in the
+	// legacy format `serviceAccount:{identity pool name}[{subject}]` If the
+	// identity is a Google account (e.g. workspace user account or service
+	// account), this will be the email of the prefixed by
+	// `serviceAccount:`. For example:
+	// `serviceAccount:my-service-account@project-1.iam.gserviceaccount.com`.
+	//  If the identity is an individual user, the identity will be
+	// formatted as: `user:user_ABC@email.com`.
+	PrincipalSubject string `json:"principalSubject,omitempty"`
+
+	// ServiceDomain: The service's fully qualified domain name, e.g.
+	// "dataproc.googleapis.com".
+	ServiceDomain string `json:"serviceDomain,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "JobMetadata") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "JobMetadata") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ServiceMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod ServiceMetadata
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // SpanContext: The context of a span. This is attached to an Exemplar
 // in Distribution values during aggregation. It contains the name of a
 // span with format:
@@ -1294,6 +1491,328 @@ func (s *ThirdPartyPrincipal) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// V2HttpRequest: A common proto for logging HTTP requests. Only
+// contains semantics defined by the HTTP specification.
+// Product-specific logging information MUST be defined in a separate
+// message.
+type V2HttpRequest struct {
+	// CacheFillBytes: The number of HTTP response bytes inserted into
+	// cache. Set only when a cache fill was attempted.
+	CacheFillBytes int64 `json:"cacheFillBytes,omitempty,string"`
+
+	// CacheHit: Whether or not an entity was served from cache (with or
+	// without validation).
+	CacheHit bool `json:"cacheHit,omitempty"`
+
+	// CacheLookup: Whether or not a cache lookup was attempted.
+	CacheLookup bool `json:"cacheLookup,omitempty"`
+
+	// CacheValidatedWithOriginServer: Whether or not the response was
+	// validated with the origin server before being served from cache. This
+	// field is only meaningful if `cache_hit` is True.
+	CacheValidatedWithOriginServer bool `json:"cacheValidatedWithOriginServer,omitempty"`
+
+	// Latency: The request processing latency on the server, from the time
+	// the request was received until the response was sent.
+	Latency string `json:"latency,omitempty"`
+
+	// Protocol: Protocol used for the request. Examples: "HTTP/1.1",
+	// "HTTP/2", "websocket"
+	Protocol string `json:"protocol,omitempty"`
+
+	// Referer: The referer URL of the request, as defined in HTTP/1.1
+	// Header Field Definitions
+	// (http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html).
+	Referer string `json:"referer,omitempty"`
+
+	// RemoteIp: The IP address (IPv4 or IPv6) of the client that issued the
+	// HTTP request. Examples: "192.168.1.1",
+	// "FE80::0202:B3FF:FE1E:8329".
+	RemoteIp string `json:"remoteIp,omitempty"`
+
+	// RequestMethod: The request method. Examples: "GET", "HEAD",
+	// "PUT", "POST".
+	RequestMethod string `json:"requestMethod,omitempty"`
+
+	// RequestSize: The size of the HTTP request message in bytes, including
+	// the request headers and the request body.
+	RequestSize int64 `json:"requestSize,omitempty,string"`
+
+	// RequestUrl: The scheme (http, https), the host name, the path, and
+	// the query portion of the URL that was requested. Example:
+	// "http://example.com/some/info?color=red".
+	RequestUrl string `json:"requestUrl,omitempty"`
+
+	// ResponseSize: The size of the HTTP response message sent back to the
+	// client, in bytes, including the response headers and the response
+	// body.
+	ResponseSize int64 `json:"responseSize,omitempty,string"`
+
+	// ServerIp: The IP address (IPv4 or IPv6) of the origin server that the
+	// request was sent to.
+	ServerIp string `json:"serverIp,omitempty"`
+
+	// Status: The response code indicating the status of the response.
+	// Examples: 200, 404.
+	Status int64 `json:"status,omitempty"`
+
+	// UserAgent: The user agent sent by the client. Example: "Mozilla/4.0
+	// (compatible; MSIE 6.0; Windows 98; Q312461; .NET CLR 1.0.3705)".
+	UserAgent string `json:"userAgent,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CacheFillBytes") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CacheFillBytes") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *V2HttpRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod V2HttpRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// V2LogEntry: An individual log entry.
+type V2LogEntry struct {
+	// HttpRequest: Optional. Information about the HTTP request associated
+	// with this log entry, if applicable.
+	HttpRequest *V2HttpRequest `json:"httpRequest,omitempty"`
+
+	// InsertId: A unique ID for the log entry used for deduplication. If
+	// omitted, the implementation will generate one based on operation_id.
+	InsertId string `json:"insertId,omitempty"`
+
+	// Labels: A set of user-defined (key, value) data that provides
+	// additional information about the log entry.
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// MonitoredResourceLabels: A set of user-defined (key, value) data that
+	// provides additional information about the moniotored resource that
+	// the log entry belongs to.
+	MonitoredResourceLabels map[string]string `json:"monitoredResourceLabels,omitempty"`
+
+	// Name: Required. The log to which this log entry belongs. Examples:
+	// "syslog", "book_log".
+	Name string `json:"name,omitempty"`
+
+	// Operation: Optional. Information about an operation associated with
+	// the log entry, if applicable.
+	Operation *V2LogEntryOperation `json:"operation,omitempty"`
+
+	// ProtoPayload: The log entry payload, represented as a protocol buffer
+	// that is expressed as a JSON object. The only accepted type currently
+	// is AuditLog.
+	ProtoPayload googleapi.RawMessage `json:"protoPayload,omitempty"`
+
+	// Severity: The severity of the log entry. The default value is
+	// `LogSeverity.DEFAULT`.
+	//
+	// Possible values:
+	//   "DEFAULT" - (0) The log entry has no assigned severity level.
+	//   "DEBUG" - (100) Debug or trace information.
+	//   "INFO" - (200) Routine information, such as ongoing status or
+	// performance.
+	//   "NOTICE" - (300) Normal but significant events, such as start up,
+	// shut down, or a configuration change.
+	//   "WARNING" - (400) Warning events might cause problems.
+	//   "ERROR" - (500) Error events are likely to cause problems.
+	//   "CRITICAL" - (600) Critical events cause more severe problems or
+	// outages.
+	//   "ALERT" - (700) A person must take an action immediately.
+	//   "EMERGENCY" - (800) One or more systems are unusable.
+	Severity string `json:"severity,omitempty"`
+
+	// SourceLocation: Optional. Source code location information associated
+	// with the log entry, if any.
+	SourceLocation *V2LogEntrySourceLocation `json:"sourceLocation,omitempty"`
+
+	// StructPayload: The log entry payload, represented as a structure that
+	// is expressed as a JSON object.
+	StructPayload googleapi.RawMessage `json:"structPayload,omitempty"`
+
+	// TextPayload: The log entry payload, represented as a Unicode string
+	// (UTF-8).
+	TextPayload string `json:"textPayload,omitempty"`
+
+	// Timestamp: The time the event described by the log entry occurred. If
+	// omitted, defaults to operation start time.
+	Timestamp string `json:"timestamp,omitempty"`
+
+	// Trace: Optional. Resource name of the trace associated with the log
+	// entry, if any. If this field contains a relative resource name, you
+	// can assume the name is relative to `//tracing.googleapis.com`.
+	// Example:
+	// `projects/my-projectid/traces/06796866738c859f2f19b7cfb3214824`
+	Trace string `json:"trace,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "HttpRequest") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "HttpRequest") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *V2LogEntry) MarshalJSON() ([]byte, error) {
+	type NoMethod V2LogEntry
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// V2LogEntryOperation: Additional information about a potentially
+// long-running operation with which a log entry is associated.
+type V2LogEntryOperation struct {
+	// First: Optional. Set this to True if this is the first log entry in
+	// the operation.
+	First bool `json:"first,omitempty"`
+
+	// Id: Optional. An arbitrary operation identifier. Log entries with the
+	// same identifier are assumed to be part of the same operation.
+	Id string `json:"id,omitempty"`
+
+	// Last: Optional. Set this to True if this is the last log entry in the
+	// operation.
+	Last bool `json:"last,omitempty"`
+
+	// Producer: Optional. An arbitrary producer identifier. The combination
+	// of `id` and `producer` must be globally unique. Examples for
+	// `producer`: "MyDivision.MyBigCompany.com",
+	// "github.com/MyProject/MyApplication".
+	Producer string `json:"producer,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "First") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "First") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *V2LogEntryOperation) MarshalJSON() ([]byte, error) {
+	type NoMethod V2LogEntryOperation
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// V2LogEntrySourceLocation: Additional information about the source
+// code location that produced the log entry.
+type V2LogEntrySourceLocation struct {
+	// File: Optional. Source file name. Depending on the runtime
+	// environment, this might be a simple name or a fully-qualified name.
+	File string `json:"file,omitempty"`
+
+	// Function: Optional. Human-readable name of the function or method
+	// being invoked, with optional context such as the class or package
+	// name. This information may be used in contexts such as the logs
+	// viewer, where a file and line number are less meaningful. The format
+	// can vary by language. For example: `qual.if.ied.Class.method` (Java),
+	// `dir/package.func` (Go), `function` (Python).
+	Function string `json:"function,omitempty"`
+
+	// Line: Optional. Line within the source file. 1-based; 0 indicates no
+	// line number available.
+	Line int64 `json:"line,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "File") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "File") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *V2LogEntrySourceLocation) MarshalJSON() ([]byte, error) {
+	type NoMethod V2LogEntrySourceLocation
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ViolationInfo: Provides information about the Policy violation info
+// for this request.
+type ViolationInfo struct {
+	// CheckedValue: Optional. Value that is being checked for the policy.
+	// This could be in encrypted form (if pii sensitive). This field will
+	// only be emitted in LIST_POLICY types
+	CheckedValue string `json:"checkedValue,omitempty"`
+
+	// Constraint: Optional. Constraint name
+	Constraint string `json:"constraint,omitempty"`
+
+	// ErrorMessage: Optional. Error message that policy is indicating.
+	ErrorMessage string `json:"errorMessage,omitempty"`
+
+	// PolicyType: Optional. Indicates the type of the policy.
+	//
+	// Possible values:
+	//   "POLICY_TYPE_UNSPECIFIED" - Default value. This value should not be
+	// used.
+	//   "BOOLEAN_CONSTRAINT" - Indicates boolean policy constraint
+	//   "LIST_CONSTRAINT" - Indicates list policy constraint
+	//   "CUSTOM_CONSTRAINT" - Indicates custom policy constraint
+	PolicyType string `json:"policyType,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CheckedValue") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CheckedValue") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ViolationInfo) MarshalJSON() ([]byte, error) {
+	type NoMethod ViolationInfo
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // method id "servicecontrol.services.check":
 
 type ServicesCheckCall struct {
@@ -1307,25 +1826,27 @@ type ServicesCheckCall struct {
 
 // Check: Private Preview. This feature is only available for approved
 // services. This method provides admission control for services that
-// are integrated with Service Infrastructure (/service-infrastructure).
-// It checks whether an operation should be allowed based on the service
-// configuration and relevant policies. It must be called before the
-// operation is executed. For more information, see Admission Control
-// (/service-infrastructure/docs/admission-control). NOTE: The admission
-// control has an expected policy propagation delay of 60s. The caller
-// **must** not depend on the most recent policy changes. NOTE: The
-// admission control has a hard limit of 1 referenced resources per
-// call. If an operation refers to more than 1 resources, the caller
-// must call the Check method multiple times. This method requires the
-// `servicemanagement.services.check` permission on the specified
-// service. For more information, see Service Control API Access Control
+// are integrated with Service Infrastructure
+// (https://cloud.google.com/service-infrastructure). It checks whether
+// an operation should be allowed based on the service configuration and
+// relevant policies. It must be called before the operation is
+// executed. For more information, see Admission Control
+// (https://cloud.google.com/service-infrastructure/docs/admission-control).
+// NOTE: The admission control has an expected policy propagation delay
+// of 60s. The caller **must** not depend on the most recent policy
+// changes. NOTE: The admission control has a hard limit of 1 referenced
+// resources per call. If an operation refers to more than 1 resources,
+// the caller must call the Check method multiple times. This method
+// requires the `servicemanagement.services.check` permission on the
+// specified service. For more information, see Service Control API
+// Access Control
 // (https://cloud.google.com/service-infrastructure/docs/service-control/access-control).
 //
-// - serviceName: The service name as specified in its service
-//   configuration. For example, "pubsub.googleapis.com". See
-//   google.api.Service
-//   (https://cloud.google.com/service-management/reference/rpc/google.api#google.api.Service)
-//   for the definition of a service name.
+//   - serviceName: The service name as specified in its service
+//     configuration. For example, "pubsub.googleapis.com". See
+//     google.api.Service
+//     (https://cloud.google.com/service-management/reference/rpc/google.api#google.api.Service)
+//     for the definition of a service name.
 func (r *ServicesService) Check(serviceName string, checkrequest *CheckRequest) *ServicesCheckCall {
 	c := &ServicesCheckCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.serviceName = serviceName
@@ -1360,7 +1881,7 @@ func (c *ServicesCheckCall) Header() http.Header {
 
 func (c *ServicesCheckCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20220122")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -1400,17 +1921,17 @@ func (c *ServicesCheckCall) Do(opts ...googleapi.CallOption) (*CheckResponse, er
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &CheckResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1424,7 +1945,7 @@ func (c *ServicesCheckCall) Do(opts ...googleapi.CallOption) (*CheckResponse, er
 	}
 	return ret, nil
 	// {
-	//   "description": "Private Preview. This feature is only available for approved services. This method provides admission control for services that are integrated with [Service Infrastructure](/service-infrastructure). It checks whether an operation should be allowed based on the service configuration and relevant policies. It must be called before the operation is executed. For more information, see [Admission Control](/service-infrastructure/docs/admission-control). NOTE: The admission control has an expected policy propagation delay of 60s. The caller **must** not depend on the most recent policy changes. NOTE: The admission control has a hard limit of 1 referenced resources per call. If an operation refers to more than 1 resources, the caller must call the Check method multiple times. This method requires the `servicemanagement.services.check` permission on the specified service. For more information, see [Service Control API Access Control](https://cloud.google.com/service-infrastructure/docs/service-control/access-control).",
+	//   "description": "Private Preview. This feature is only available for approved services. This method provides admission control for services that are integrated with [Service Infrastructure](https://cloud.google.com/service-infrastructure). It checks whether an operation should be allowed based on the service configuration and relevant policies. It must be called before the operation is executed. For more information, see [Admission Control](https://cloud.google.com/service-infrastructure/docs/admission-control). NOTE: The admission control has an expected policy propagation delay of 60s. The caller **must** not depend on the most recent policy changes. NOTE: The admission control has a hard limit of 1 referenced resources per call. If an operation refers to more than 1 resources, the caller must call the Check method multiple times. This method requires the `servicemanagement.services.check` permission on the specified service. For more information, see [Service Control API Access Control](https://cloud.google.com/service-infrastructure/docs/service-control/access-control).",
 	//   "flatPath": "v2/services/{serviceName}:check",
 	//   "httpMethod": "POST",
 	//   "id": "servicecontrol.services.check",
@@ -1467,23 +1988,24 @@ type ServicesReportCall struct {
 
 // Report: Private Preview. This feature is only available for approved
 // services. This method provides telemetry reporting for services that
-// are integrated with Service Infrastructure (/service-infrastructure).
-// It reports a list of operations that have occurred on a service. It
-// must be called after the operations have been executed. For more
-// information, see Telemetry Reporting
-// (/service-infrastructure/docs/telemetry-reporting). NOTE: The
-// telemetry reporting has a hard limit of 1000 operations and 1MB per
-// Report call. It is recommended to have no more than 100 operations
-// per call. This method requires the
+// are integrated with Service Infrastructure
+// (https://cloud.google.com/service-infrastructure). It reports a list
+// of operations that have occurred on a service. It must be called
+// after the operations have been executed. For more information, see
+// Telemetry Reporting
+// (https://cloud.google.com/service-infrastructure/docs/telemetry-reporting).
+// NOTE: The telemetry reporting has a hard limit of 1000 operations and
+// 1MB per Report call. It is recommended to have no more than 100
+// operations per call. This method requires the
 // `servicemanagement.services.report` permission on the specified
 // service. For more information, see Service Control API Access Control
 // (https://cloud.google.com/service-infrastructure/docs/service-control/access-control).
 //
-// - serviceName: The service name as specified in its service
-//   configuration. For example, "pubsub.googleapis.com". See
-//   google.api.Service
-//   (https://cloud.google.com/service-management/reference/rpc/google.api#google.api.Service)
-//   for the definition of a service name.
+//   - serviceName: The service name as specified in its service
+//     configuration. For example, "pubsub.googleapis.com". See
+//     google.api.Service
+//     (https://cloud.google.com/service-management/reference/rpc/google.api#google.api.Service)
+//     for the definition of a service name.
 func (r *ServicesService) Report(serviceName string, reportrequest *ReportRequest) *ServicesReportCall {
 	c := &ServicesReportCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.serviceName = serviceName
@@ -1518,7 +2040,7 @@ func (c *ServicesReportCall) Header() http.Header {
 
 func (c *ServicesReportCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20220122")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/"+internal.Version)
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -1558,17 +2080,17 @@ func (c *ServicesReportCall) Do(opts ...googleapi.CallOption) (*ReportResponse, 
 		if res.Body != nil {
 			res.Body.Close()
 		}
-		return nil, &googleapi.Error{
+		return nil, gensupport.WrapError(&googleapi.Error{
 			Code:   res.StatusCode,
 			Header: res.Header,
-		}
+		})
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer googleapi.CloseBody(res)
 	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
+		return nil, gensupport.WrapError(err)
 	}
 	ret := &ReportResponse{
 		ServerResponse: googleapi.ServerResponse{
@@ -1582,7 +2104,7 @@ func (c *ServicesReportCall) Do(opts ...googleapi.CallOption) (*ReportResponse, 
 	}
 	return ret, nil
 	// {
-	//   "description": "Private Preview. This feature is only available for approved services. This method provides telemetry reporting for services that are integrated with [Service Infrastructure](/service-infrastructure). It reports a list of operations that have occurred on a service. It must be called after the operations have been executed. For more information, see [Telemetry Reporting](/service-infrastructure/docs/telemetry-reporting). NOTE: The telemetry reporting has a hard limit of 1000 operations and 1MB per Report call. It is recommended to have no more than 100 operations per call. This method requires the `servicemanagement.services.report` permission on the specified service. For more information, see [Service Control API Access Control](https://cloud.google.com/service-infrastructure/docs/service-control/access-control).",
+	//   "description": "Private Preview. This feature is only available for approved services. This method provides telemetry reporting for services that are integrated with [Service Infrastructure](https://cloud.google.com/service-infrastructure). It reports a list of operations that have occurred on a service. It must be called after the operations have been executed. For more information, see [Telemetry Reporting](https://cloud.google.com/service-infrastructure/docs/telemetry-reporting). NOTE: The telemetry reporting has a hard limit of 1000 operations and 1MB per Report call. It is recommended to have no more than 100 operations per call. This method requires the `servicemanagement.services.report` permission on the specified service. For more information, see [Service Control API Access Control](https://cloud.google.com/service-infrastructure/docs/service-control/access-control).",
 	//   "flatPath": "v2/services/{serviceName}:report",
 	//   "httpMethod": "POST",
 	//   "id": "servicecontrol.services.report",

@@ -111,7 +111,7 @@
     "services": {
       "methods": {
         "check": {
-          "description": "Private Preview. This feature is only available for approved services. This method provides admission control for services that are integrated with [Service Infrastructure](/service-infrastructure). It checks whether an operation should be allowed based on the service configuration and relevant policies. It must be called before the operation is executed. For more information, see [Admission Control](/service-infrastructure/docs/admission-control). NOTE: The admission control has an expected policy propagation delay of 60s. The caller **must** not depend on the most recent policy changes. NOTE: The admission control has a hard limit of 1 referenced resources per call. If an operation refers to more than 1 resources, the caller must call the Check method multiple times. This method requires the `servicemanagement.services.check` permission on the specified service. For more information, see [Service Control API Access Control](https://cloud.google.com/service-infrastructure/docs/service-control/access-control).",
+          "description": "Private Preview. This feature is only available for approved services. This method provides admission control for services that are integrated with [Service Infrastructure](https://cloud.google.com/service-infrastructure). It checks whether an operation should be allowed based on the service configuration and relevant policies. It must be called before the operation is executed. For more information, see [Admission Control](https://cloud.google.com/service-infrastructure/docs/admission-control). NOTE: The admission control has an expected policy propagation delay of 60s. The caller **must** not depend on the most recent policy changes. NOTE: The admission control has a hard limit of 1 referenced resources per call. If an operation refers to more than 1 resources, the caller must call the Check method multiple times. This method requires the `servicemanagement.services.check` permission on the specified service. For more information, see [Service Control API Access Control](https://cloud.google.com/service-infrastructure/docs/service-control/access-control).",
           "flatPath": "v2/services/{serviceName}:check",
           "httpMethod": "POST",
           "id": "servicecontrol.services.check",
@@ -139,7 +139,7 @@
           ]
         },
         "report": {
-          "description": "Private Preview. This feature is only available for approved services. This method provides telemetry reporting for services that are integrated with [Service Infrastructure](/service-infrastructure). It reports a list of operations that have occurred on a service. It must be called after the operations have been executed. For more information, see [Telemetry Reporting](/service-infrastructure/docs/telemetry-reporting). NOTE: The telemetry reporting has a hard limit of 1000 operations and 1MB per Report call. It is recommended to have no more than 100 operations per call. This method requires the `servicemanagement.services.report` permission on the specified service. For more information, see [Service Control API Access Control](https://cloud.google.com/service-infrastructure/docs/service-control/access-control).",
+          "description": "Private Preview. This feature is only available for approved services. This method provides telemetry reporting for services that are integrated with [Service Infrastructure](https://cloud.google.com/service-infrastructure). It reports a list of operations that have occurred on a service. It must be called after the operations have been executed. For more information, see [Telemetry Reporting](https://cloud.google.com/service-infrastructure/docs/telemetry-reporting). NOTE: The telemetry reporting has a hard limit of 1000 operations and 1MB per Report call. It is recommended to have no more than 100 operations per call. This method requires the `servicemanagement.services.report` permission on the specified service. For more information, see [Service Control API Access Control](https://cloud.google.com/service-infrastructure/docs/service-control/access-control).",
           "flatPath": "v2/services/{serviceName}:report",
           "httpMethod": "POST",
           "id": "servicecontrol.services.report",
@@ -169,7 +169,7 @@
       }
     }
   },
-  "revision": "20210930",
+  "revision": "20230805",
   "rootUrl": "https://servicecontrol.googleapis.com/",
   "schemas": {
     "Api": {
@@ -273,6 +273,10 @@
           "format": "int64",
           "type": "string"
         },
+        "policyViolationInfo": {
+          "$ref": "PolicyViolationInfo",
+          "description": "Indicates the policy violations for this request. If the request is denied by the policy, violation information will be logged here."
+        },
         "request": {
           "additionalProperties": {
             "description": "Properties of the object.",
@@ -314,6 +318,7 @@
             "description": "Properties of the object. Contains field @type with type URL.",
             "type": "any"
           },
+          "deprecated": true,
           "description": "Deprecated. Use the `metadata` field instead. Other service-specific data about the request, response, and other activities.",
           "type": "object"
         },
@@ -392,6 +397,10 @@
           "description": "The name of the service account key used to create or exchange credentials for authenticating the service account making the request. This is a scheme-less URI full resource name. For example: \"//iam.googleapis.com/projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}\"",
           "type": "string"
         },
+        "serviceDelegationHistory": {
+          "$ref": "ServiceDelegationHistory",
+          "description": "Records the history of delegated resource access across Google services."
+        },
         "thirdPartyPrincipal": {
           "additionalProperties": {
             "description": "Properties of the object.",
@@ -465,7 +474,7 @@
         },
         "status": {
           "$ref": "Status",
-          "description": "Operation is allowed when this field is not set. Any non-'OK' status indicates a denial; [google.rpc.Status.details]() would contain additional details about the denial."
+          "description": "Operation is allowed when this field is not set. Any non-'OK' status indicates a denial; google.rpc.Status.details would contain additional details about the denial."
         }
       },
       "type": "object"
@@ -485,6 +494,39 @@
           },
           "description": "Metadata about the service that uses the service account. .",
           "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "OrgPolicyViolationInfo": {
+      "description": "Represents OrgPolicy Violation information.",
+      "id": "OrgPolicyViolationInfo",
+      "properties": {
+        "payload": {
+          "additionalProperties": {
+            "description": "Properties of the object.",
+            "type": "any"
+          },
+          "description": "Optional. Resource payload that is currently in scope and is subjected to orgpolicy conditions. This payload may be the subset of the actual Resource that may come in the request. This payload should not contain any core content.",
+          "type": "object"
+        },
+        "resourceTags": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional. Tags referenced on the resource at the time of evaluation. These also include the federated tags, if they are supplied in the CheckOrgPolicy or CheckCustomConstraints Requests. Optional field as of now. These tags are the Cloud tags that are available on the resource during the policy evaluation and will be available as part of the OrgPolicy check response for logging purposes.",
+          "type": "object"
+        },
+        "resourceType": {
+          "description": "Optional. Resource type that the orgpolicy is checked against. Example: compute.googleapis.com/Instance, store.googleapis.com/bucket",
+          "type": "string"
+        },
+        "violationInfo": {
+          "description": "Optional. Policy violations",
+          "items": {
+            "$ref": "ViolationInfo"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -510,12 +552,23 @@
           "type": "string"
         },
         "principal": {
-          "description": "The identity of this peer. Similar to `Request.auth.principal`, but relative to the peer instead of the request. For example, the idenity associated with a load balancer that forwared the request.",
+          "description": "The identity of this peer. Similar to `Request.auth.principal`, but relative to the peer instead of the request. For example, the identity associated with a load balancer that forwarded the request.",
           "type": "string"
         },
         "regionCode": {
           "description": "The CLDR country/region code associated with the above IP address. If the IP address is private, the `region_code` should reflect the physical location where this peer is running.",
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PolicyViolationInfo": {
+      "description": "Information related to policy violations for this request.",
+      "id": "PolicyViolationInfo",
+      "properties": {
+        "orgPolicyViolationInfo": {
+          "$ref": "OrgPolicyViolationInfo",
+          "description": "Indicates the orgpolicy violations for this resource."
         }
       },
       "type": "object"
@@ -539,7 +592,7 @@
       "type": "object"
     },
     "ReportResponse": {
-      "description": "Response message for the Report method. If the request contains any invalid data, the server returns an RPC error.",
+      "description": "Response message for the Report method.",
       "id": "ReportResponse",
       "properties": {},
       "type": "object"
@@ -609,7 +662,7 @@
       "id": "RequestMetadata",
       "properties": {
         "callerIp": {
-          "description": "The IP address of the caller. For caller from internet, this will be public IPv4 or IPv6 address. For caller from a Compute Engine VM with external IP address, this will be the VM's external IP address. For caller from a Compute Engine VM without external IP address, if the VM is in the same organization (or project) as the accessed resource, `caller_ip` will be the VM's internal IPv4 address, otherwise the `caller_ip` will be redacted to \"gce-internal-ip\". See https://cloud.google.com/compute/docs/vpc/ for more information.",
+          "description": "The IP address of the caller. For a caller from the internet, this will be the public IPv4 or IPv6 address. For calls made from inside Google's internal production network from one GCP service to another, `caller_ip` will be redacted to \"private\". For a caller from a Compute Engine VM with a external IP address, `caller_ip` will be the VM's external IP address. For a caller from a Compute Engine VM without a external IP address, if the VM is in the same organization (or project) as the accessed resource, `caller_ip` will be the VM's internal IPv4 address, otherwise `caller_ip` will be redacted to \"gce-internal-ip\". See https://cloud.google.com/compute/docs/vpc/ for more information.",
           "type": "string"
         },
         "callerNetwork": {
@@ -617,7 +670,7 @@
           "type": "string"
         },
         "callerSuppliedUserAgent": {
-          "description": "The user agent of the caller. This information is not authenticated and should be treated accordingly. For example: + `google-api-python-client/1.4.0`: The request was made by the Google API client for Python. + `Cloud SDK Command Line Tool apitools-client/1.0 gcloud/0.9.62`: The request was made by the Google Cloud SDK CLI (gcloud). + `AppEngine-Google; (+http://code.google.com/appengine; appid: s~my-project`: The request was made from the `my-project` App Engine app. NOLINT",
+          "description": "The user agent of the caller. This information is not authenticated and should be treated accordingly. For example: + `google-api-python-client/1.4.0`: The request was made by the Google API client for Python. + `Cloud SDK Command Line Tool apitools-client/1.0 gcloud/0.9.62`: The request was made by the Google Cloud SDK CLI (gcloud). + `AppEngine-Google; (+http://code.google.com/appengine; appid: s~my-project`: The request was made from the `my-project` App Engine app.",
           "type": "string"
         },
         "destinationAttributes": {
@@ -639,7 +692,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. They are not queryable and should be preserved when modifying objects. More info: https://kubernetes.io/docs/user-guide/annotations",
+          "description": "Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. They are not queryable and should be preserved when modifying objects. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/",
           "type": "object"
         },
         "createTime": {
@@ -700,11 +753,11 @@
       "id": "ResourceInfo",
       "properties": {
         "container": {
-          "description": "Optional. The identifier of the container of this resource. For Google Cloud APIs, the resource container must be one of the following formats: - `projects/` - `folders/` - `organizations/` For the policy enforcement on the container level (VPCSC and Location Policy check), this field takes precedence on the container extracted from name when presents.",
+          "description": "Optional. The identifier of the container of this resource. For Google Cloud APIs, the resource container must be one of the following formats: - `projects/` - `folders/` - `organizations/` Required for the policy enforcement on the container level (e.g. VPCSC, Location Policy check, Org Policy check).",
           "type": "string"
         },
         "location": {
-          "description": "Optional. The location of the resource. The value must be a valid zone, region or multiregion. For example: \"europe-west4\" or \"northamerica-northeast1-a\"",
+          "description": "Optional. The location of the resource, it must be a valid zone, region or multiregion, for example: \"europe-west4\", \"northamerica-northeast1-a\". Required for location policy check.",
           "type": "string"
         },
         "name": {
@@ -796,6 +849,47 @@
       },
       "type": "object"
     },
+    "ServiceDelegationHistory": {
+      "description": "The history of delegation across multiple services as the result of the original user's action. Such as \"service A uses its own account to do something for user B\". This differs from ServiceAccountDelegationInfo, which only tracks the history of direct token exchanges (impersonation).",
+      "id": "ServiceDelegationHistory",
+      "properties": {
+        "originalPrincipal": {
+          "description": "The original end user who initiated the request to GCP.",
+          "type": "string"
+        },
+        "serviceMetadata": {
+          "description": "Data identifying the service specific jobs or units of work that were involved in a chain of service calls.",
+          "items": {
+            "$ref": "ServiceMetadata"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ServiceMetadata": {
+      "description": "Metadata describing the service and additional service specific information used to identify the job or unit of work at hand.",
+      "id": "ServiceMetadata",
+      "properties": {
+        "jobMetadata": {
+          "additionalProperties": {
+            "description": "Properties of the object.",
+            "type": "any"
+          },
+          "description": "Additional metadata provided by service teams to describe service specific job information that was triggered by the original principal.",
+          "type": "object"
+        },
+        "principalSubject": {
+          "description": "A string representing the principal_subject associated with the identity. For most identities, the format will be `principal://iam.googleapis.com/{identity pool name}/subject/{subject)` except for some GKE identities (GKE_WORKLOAD, FREEFORM, GKE_HUB_WORKLOAD) that are still in the legacy format `serviceAccount:{identity pool name}[{subject}]` If the identity is a Google account (e.g. workspace user account or service account), this will be the email of the prefixed by `serviceAccount:`. For example: `serviceAccount:my-service-account@project-1.iam.gserviceaccount.com`. If the identity is an individual user, the identity will be formatted as: `user:user_ABC@email.com`.",
+          "type": "string"
+        },
+        "serviceDomain": {
+          "description": "The service's fully qualified domain name, e.g. \"dataproc.googleapis.com\".",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "SpanContext": {
       "description": "The context of a span. This is attached to an Exemplar in Distribution values during aggregation. It contains the name of a span with format: projects/[PROJECT_ID_OR_NUMBER]/traces/[TRACE_ID]/spans/[SPAN_ID]",
       "id": "SpanContext",
@@ -845,6 +939,252 @@
           },
           "description": "Metadata about third party identity.",
           "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "V2HttpRequest": {
+      "description": "A common proto for logging HTTP requests. Only contains semantics defined by the HTTP specification. Product-specific logging information MUST be defined in a separate message.",
+      "id": "V2HttpRequest",
+      "properties": {
+        "cacheFillBytes": {
+          "description": "The number of HTTP response bytes inserted into cache. Set only when a cache fill was attempted.",
+          "format": "int64",
+          "type": "string"
+        },
+        "cacheHit": {
+          "description": "Whether or not an entity was served from cache (with or without validation).",
+          "type": "boolean"
+        },
+        "cacheLookup": {
+          "description": "Whether or not a cache lookup was attempted.",
+          "type": "boolean"
+        },
+        "cacheValidatedWithOriginServer": {
+          "description": "Whether or not the response was validated with the origin server before being served from cache. This field is only meaningful if `cache_hit` is True.",
+          "type": "boolean"
+        },
+        "latency": {
+          "description": "The request processing latency on the server, from the time the request was received until the response was sent.",
+          "format": "google-duration",
+          "type": "string"
+        },
+        "protocol": {
+          "description": "Protocol used for the request. Examples: \"HTTP/1.1\", \"HTTP/2\", \"websocket\"",
+          "type": "string"
+        },
+        "referer": {
+          "description": "The referer URL of the request, as defined in [HTTP/1.1 Header Field Definitions](http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html).",
+          "type": "string"
+        },
+        "remoteIp": {
+          "description": "The IP address (IPv4 or IPv6) of the client that issued the HTTP request. Examples: `\"192.168.1.1\"`, `\"FE80::0202:B3FF:FE1E:8329\"`.",
+          "type": "string"
+        },
+        "requestMethod": {
+          "description": "The request method. Examples: `\"GET\"`, `\"HEAD\"`, `\"PUT\"`, `\"POST\"`.",
+          "type": "string"
+        },
+        "requestSize": {
+          "description": "The size of the HTTP request message in bytes, including the request headers and the request body.",
+          "format": "int64",
+          "type": "string"
+        },
+        "requestUrl": {
+          "description": "The scheme (http, https), the host name, the path, and the query portion of the URL that was requested. Example: `\"http://example.com/some/info?color=red\"`.",
+          "type": "string"
+        },
+        "responseSize": {
+          "description": "The size of the HTTP response message sent back to the client, in bytes, including the response headers and the response body.",
+          "format": "int64",
+          "type": "string"
+        },
+        "serverIp": {
+          "description": "The IP address (IPv4 or IPv6) of the origin server that the request was sent to.",
+          "type": "string"
+        },
+        "status": {
+          "description": "The response code indicating the status of the response. Examples: 200, 404.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "userAgent": {
+          "description": "The user agent sent by the client. Example: `\"Mozilla/4.0 (compatible; MSIE 6.0; Windows 98; Q312461; .NET CLR 1.0.3705)\"`.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "V2LogEntry": {
+      "description": "An individual log entry.",
+      "id": "V2LogEntry",
+      "properties": {
+        "httpRequest": {
+          "$ref": "V2HttpRequest",
+          "description": "Optional. Information about the HTTP request associated with this log entry, if applicable."
+        },
+        "insertId": {
+          "description": "A unique ID for the log entry used for deduplication. If omitted, the implementation will generate one based on operation_id.",
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "A set of user-defined (key, value) data that provides additional information about the log entry.",
+          "type": "object"
+        },
+        "monitoredResourceLabels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "A set of user-defined (key, value) data that provides additional information about the moniotored resource that the log entry belongs to.",
+          "type": "object"
+        },
+        "name": {
+          "description": "Required. The log to which this log entry belongs. Examples: `\"syslog\"`, `\"book_log\"`.",
+          "type": "string"
+        },
+        "operation": {
+          "$ref": "V2LogEntryOperation",
+          "description": "Optional. Information about an operation associated with the log entry, if applicable."
+        },
+        "protoPayload": {
+          "additionalProperties": {
+            "description": "Properties of the object. Contains field @type with type URL.",
+            "type": "any"
+          },
+          "description": "The log entry payload, represented as a protocol buffer that is expressed as a JSON object. The only accepted type currently is AuditLog.",
+          "type": "object"
+        },
+        "severity": {
+          "description": "The severity of the log entry. The default value is `LogSeverity.DEFAULT`.",
+          "enum": [
+            "DEFAULT",
+            "DEBUG",
+            "INFO",
+            "NOTICE",
+            "WARNING",
+            "ERROR",
+            "CRITICAL",
+            "ALERT",
+            "EMERGENCY"
+          ],
+          "enumDescriptions": [
+            "(0) The log entry has no assigned severity level.",
+            "(100) Debug or trace information.",
+            "(200) Routine information, such as ongoing status or performance.",
+            "(300) Normal but significant events, such as start up, shut down, or a configuration change.",
+            "(400) Warning events might cause problems.",
+            "(500) Error events are likely to cause problems.",
+            "(600) Critical events cause more severe problems or outages.",
+            "(700) A person must take an action immediately.",
+            "(800) One or more systems are unusable."
+          ],
+          "type": "string"
+        },
+        "sourceLocation": {
+          "$ref": "V2LogEntrySourceLocation",
+          "description": "Optional. Source code location information associated with the log entry, if any."
+        },
+        "structPayload": {
+          "additionalProperties": {
+            "description": "Properties of the object.",
+            "type": "any"
+          },
+          "description": "The log entry payload, represented as a structure that is expressed as a JSON object.",
+          "type": "object"
+        },
+        "textPayload": {
+          "description": "The log entry payload, represented as a Unicode string (UTF-8).",
+          "type": "string"
+        },
+        "timestamp": {
+          "description": "The time the event described by the log entry occurred. If omitted, defaults to operation start time.",
+          "format": "google-datetime",
+          "type": "string"
+        },
+        "trace": {
+          "description": "Optional. Resource name of the trace associated with the log entry, if any. If this field contains a relative resource name, you can assume the name is relative to `//tracing.googleapis.com`. Example: `projects/my-projectid/traces/06796866738c859f2f19b7cfb3214824`",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "V2LogEntryOperation": {
+      "description": "Additional information about a potentially long-running operation with which a log entry is associated.",
+      "id": "V2LogEntryOperation",
+      "properties": {
+        "first": {
+          "description": "Optional. Set this to True if this is the first log entry in the operation.",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Optional. An arbitrary operation identifier. Log entries with the same identifier are assumed to be part of the same operation.",
+          "type": "string"
+        },
+        "last": {
+          "description": "Optional. Set this to True if this is the last log entry in the operation.",
+          "type": "boolean"
+        },
+        "producer": {
+          "description": "Optional. An arbitrary producer identifier. The combination of `id` and `producer` must be globally unique. Examples for `producer`: `\"MyDivision.MyBigCompany.com\"`, `\"github.com/MyProject/MyApplication\"`.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "V2LogEntrySourceLocation": {
+      "description": "Additional information about the source code location that produced the log entry.",
+      "id": "V2LogEntrySourceLocation",
+      "properties": {
+        "file": {
+          "description": "Optional. Source file name. Depending on the runtime environment, this might be a simple name or a fully-qualified name.",
+          "type": "string"
+        },
+        "function": {
+          "description": "Optional. Human-readable name of the function or method being invoked, with optional context such as the class or package name. This information may be used in contexts such as the logs viewer, where a file and line number are less meaningful. The format can vary by language. For example: `qual.if.ied.Class.method` (Java), `dir/package.func` (Go), `function` (Python).",
+          "type": "string"
+        },
+        "line": {
+          "description": "Optional. Line within the source file. 1-based; 0 indicates no line number available.",
+          "format": "int64",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ViolationInfo": {
+      "description": "Provides information about the Policy violation info for this request.",
+      "id": "ViolationInfo",
+      "properties": {
+        "checkedValue": {
+          "description": "Optional. Value that is being checked for the policy. This could be in encrypted form (if pii sensitive). This field will only be emitted in LIST_POLICY types",
+          "type": "string"
+        },
+        "constraint": {
+          "description": "Optional. Constraint name",
+          "type": "string"
+        },
+        "errorMessage": {
+          "description": "Optional. Error message that policy is indicating.",
+          "type": "string"
+        },
+        "policyType": {
+          "description": "Optional. Indicates the type of the policy.",
+          "enum": [
+            "POLICY_TYPE_UNSPECIFIED",
+            "BOOLEAN_CONSTRAINT",
+            "LIST_CONSTRAINT",
+            "CUSTOM_CONSTRAINT"
+          ],
+          "enumDescriptions": [
+            "Default value. This value should not be used.",
+            "Indicates boolean policy constraint",
+            "Indicates list policy constraint",
+            "Indicates custom policy constraint"
+          ],
+          "type": "string"
         }
       },
       "type": "object"
