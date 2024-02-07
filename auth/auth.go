@@ -8,6 +8,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/oauth"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -50,11 +51,9 @@ func NewGrpcConnection(token *oauth2.Token, developerToken string, loginCustomer
 	headers := createHeaders(token.AccessToken, developerToken, loginCustomerID)
 	ctx := metadata.NewOutgoingContext(context.Background(), headers)
 
-	// TODO: Also pass token creds
-	// creds := oauth.NewOauthAccess(g.token)
-	// grpc.WithPerRPCCredentials(creds)
+	creds := oauth.NewOauthAccess(token)
 	transportCreds := grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, ""))
-	conn, err := grpc.Dial(address, transportCreds)
+	conn, err := grpc.Dial(address, transportCreds, grpc.WithPerRPCCredentials(creds))
 	if err != nil {
 		return nil, nil, err
 	}
