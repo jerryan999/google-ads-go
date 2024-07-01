@@ -1,6 +1,6 @@
 # google-ads-go
 
-| Google Ads API version 	| [`v9`](https://developers.google.com/google-ads/api/docs) |
+| Google Ads API version 	| [`v15`](https://developers.google.com/google-ads/api/docs) |
 |-|:-:|
 
 ## Features
