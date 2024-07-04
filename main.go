@@ -33,7 +33,6 @@ func main() {
 
 	set.Parse(os.Args[2:])
 	command := os.Args[1]
-
 	switch command {
 	case "refresh":
 		refresh()

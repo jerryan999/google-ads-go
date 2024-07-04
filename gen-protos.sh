@@ -3,7 +3,7 @@ PROTO_ROOT_DIR=$1
 PROTO_SRC_DIR=$2
 PROTOC_GO_ARGS=$3
 
-GOOGLE_ADS_VERSION=v15
+GOOGLE_ADS_VERSION=v17
 
 # Protos in order to compile
 PROTOS_ENUMS=googleapis/google/ads/googleads/$GOOGLE_ADS_VERSION/enums/*.proto

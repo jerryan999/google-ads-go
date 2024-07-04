@@ -1,5 +1,5 @@
 PACKAGES=('common' 'enums' 'errors' 'resources' 'services')
-GOOGLE_ADS_VERSION=v15
+GOOGLE_ADS_VERSION=v17
 
 function fix_package_path() {
     FILE=$1
