@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/jerryan999/google-ads-go/auth"
+	"github.com/jerryan999/google-ads-go/v17/auth"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
@@ -84,7 +84,9 @@ func ReadCredentialsFile(filepath string) (*GoogleAdsClientParams, error) {
 		return nil, err
 	}
 	var g googleAdsStorageParams
-	json.Unmarshal(file, &g)
+	if err = json.Unmarshal(file, &g); err != nil {
+		return nil, err
+	}
 
 	return &GoogleAdsClientParams{
 		ClientID:        g.ClientID,
@@ -93,6 +95,26 @@ func ReadCredentialsFile(filepath string) (*GoogleAdsClientParams, error) {
 		DeveloperToken:  g.DeveloperToken,
 		LoginCustomerID: g.LoginCustomerID,
 	}, nil
+}
+
+// RefreshTokenIfNeeded checks and refreshes the access token if it is not valid
+func (g *GoogleAdsClient) RefreshTokenIfNeeded() error {
+	if !g.token.Valid() {
+		newToken, err := auth.RefreshToken(g.credentials, g.token)
+		if err != nil {
+			return err
+		}
+		g.token = newToken
+
+		// Refresh gRPC connection with new token
+		conn, ctx, err := auth.NewGrpcConnection(g.token, g.developerToken, g.loginCustomerID)
+		if err != nil {
+			return err
+		}
+		g.conn = conn
+		g.ctx = ctx
+	}
+	return nil
 }
 
 // Conn returns a pointer to the clients gRPC connection
