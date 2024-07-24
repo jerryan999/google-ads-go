@@ -1,4 +1,4 @@
-module github.com/jerryan999/google-ads-go
+module github.com/jerryan999/google-ads-go/v17
 
 go 1.21
 
