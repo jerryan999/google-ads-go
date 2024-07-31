@@ -21,7 +21,7 @@
 package common
 
 import (
-	enums "github.com/jerryan999/google-ads-go/enums"
+	enums "github.com/jerryan999/google-ads-go/v17/enums"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

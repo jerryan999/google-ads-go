@@ -22,7 +22,7 @@ package services
 
 import (
 	context "context"
-	resources "github.com/jerryan999/google-ads-go/resources"
+	resources "github.com/jerryan999/google-ads-go/v17/resources"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"

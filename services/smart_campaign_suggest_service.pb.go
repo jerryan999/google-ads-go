@@ -21,8 +21,8 @@
 package services
 
 import (
-	common "github.com/jerryan999/google-ads-go/common"
-	resources "github.com/jerryan999/google-ads-go/resources"
+	common "github.com/jerryan999/google-ads-go/v17/common"
+	resources "github.com/jerryan999/google-ads-go/v17/resources"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"

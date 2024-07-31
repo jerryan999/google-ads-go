@@ -21,7 +21,7 @@
 package resources
 
 import (
-	enums "github.com/jerryan999/google-ads-go/enums"
+	enums "github.com/jerryan999/google-ads-go/v17/enums"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
